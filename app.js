@@ -6,11 +6,10 @@ const bcrypt = require('bcryptjs');
 const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const { initDB } = require('./db');
+const { initDB, getAll, getOne, run } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-let db;
 
 // Middleware
 app.set('view engine', 'ejs');
@@ -71,18 +70,18 @@ const requireAuth = (req, res, next) => {
 
 // --- PUBLIC ROUTES ---
 
-app.get('/', async (req, res) => {
-  const posts = await db.all('SELECT * FROM posts ORDER BY created_at DESC LIMIT 3');
+app.get('/', (req, res) => {
+  const posts = getAll('SELECT * FROM posts ORDER BY created_at DESC LIMIT 3');
   res.render('index', { posts });
 });
 
-app.get('/blog', async (req, res) => {
-  const posts = await db.all('SELECT * FROM posts ORDER BY created_at DESC');
+app.get('/blog', (req, res) => {
+  const posts = getAll('SELECT * FROM posts ORDER BY created_at DESC');
   res.render('blog', { posts });
 });
 
-app.get('/blog/:slug', async (req, res) => {
-  const post = await db.get('SELECT * FROM posts WHERE slug = ?', [req.params.slug]);
+app.get('/blog/:slug', (req, res) => {
+  const post = getOne('SELECT * FROM posts WHERE slug = ?', [req.params.slug]);
   if (!post) {
     return res.status(404).render('404');
   }
@@ -96,9 +95,9 @@ app.get('/admin/login', (req, res) => {
   res.render('admin/login', { error: null });
 });
 
-app.post('/admin/login', loginLimiter, async (req, res) => {
+app.post('/admin/login', loginLimiter, (req, res) => {
   const { username, password } = req.body;
-  const user = await db.get('SELECT * FROM users WHERE username = ?', [username]);
+  const user = getOne('SELECT * FROM users WHERE username = ?', [username]);
   
   if (user && bcrypt.compareSync(password, user.password)) {
     req.session.userId = user.id;
@@ -113,8 +112,8 @@ app.get('/admin/logout', (req, res) => {
   res.redirect('/admin/login');
 });
 
-app.get('/admin', requireAuth, async (req, res) => {
-  const posts = await db.all('SELECT * FROM posts ORDER BY created_at DESC');
+app.get('/admin', requireAuth, (req, res) => {
+  const posts = getAll('SELECT * FROM posts ORDER BY created_at DESC');
   res.render('admin/dashboard', { posts });
 });
 
@@ -122,47 +121,47 @@ app.get('/admin/posts/new', requireAuth, (req, res) => {
   res.render('admin/edit', { post: null });
 });
 
-app.post('/admin/posts', requireAuth, async (req, res) => {
+app.post('/admin/posts', requireAuth, (req, res) => {
   const { title, content, meta_description } = req.body;
   const slug = slugify(title, { lower: true, strict: true });
   
   try {
-    await db.run('INSERT INTO posts (title, slug, content, meta_description) VALUES (?, ?, ?, ?)', [title, slug, content, meta_description]);
+    run('INSERT INTO posts (title, slug, content, meta_description) VALUES (?, ?, ?, ?)', [title, slug, content, meta_description]);
     res.redirect('/admin');
   } catch (error) {
     res.status(400).send('Error creating post: ' + error.message);
   }
 });
 
-app.get('/admin/posts/:id/edit', requireAuth, async (req, res) => {
-  const post = await db.get('SELECT * FROM posts WHERE id = ?', [req.params.id]);
+app.get('/admin/posts/:id/edit', requireAuth, (req, res) => {
+  const post = getOne('SELECT * FROM posts WHERE id = ?', [req.params.id]);
   if (!post) return res.status(404).send('Post not found');
   res.render('admin/edit', { post });
 });
 
-app.post('/admin/posts/:id', requireAuth, async (req, res) => {
+app.post('/admin/posts/:id', requireAuth, (req, res) => {
   const { title, content, meta_description } = req.body;
   const slug = slugify(title, { lower: true, strict: true });
   
   try {
-    await db.run('UPDATE posts SET title = ?, slug = ?, content = ?, meta_description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [title, slug, content, meta_description, req.params.id]);
+    run('UPDATE posts SET title = ?, slug = ?, content = ?, meta_description = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', [title, slug, content, meta_description, req.params.id]);
     res.redirect('/admin');
   } catch (error) {
     res.status(400).send('Error updating post: ' + error.message);
   }
 });
 
-app.post('/admin/posts/:id/delete', requireAuth, async (req, res) => {
-  await db.run('DELETE FROM posts WHERE id = ?', [req.params.id]);
+app.post('/admin/posts/:id/delete', requireAuth, (req, res) => {
+  run('DELETE FROM posts WHERE id = ?', [req.params.id]);
   res.redirect('/admin');
 });
 
 // Start Server
-initDB().then(database => {
-  db = database;
+initDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
   });
 }).catch(err => {
-  console.error('Failed to initialize database', err);
+  console.error('Failed to initialize database:', err);
+  process.exit(1);
 });
