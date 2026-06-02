@@ -1,0 +1,28 @@
+<%- include('partials/header', { title: post.title, meta_description: post.meta_description }) %>
+
+<article class="bg-white py-16 min-h-[70vh]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header class="mb-10 text-center" data-aos="fade-down">
+            <div class="text-sm font-semibold text-brim-gold uppercase tracking-wider mb-4">
+                Dipublikasikan pada <%= new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+            </div>
+            <h1 class="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-brim-navy mb-4 sm:mb-6 leading-tight px-2">
+                <%= post.title %>
+            </h1>
+            <div class="w-20 h-1 bg-brim-gold mx-auto rounded-full"></div>
+        </header>
+
+        <section class="quill-content text-gray-800 text-lg md:text-xl leading-relaxed md:leading-loose" data-aos="fade-up" data-aos-delay="200">
+            <%- post.content %>
+        </section>
+        
+        <div class="mt-16 pt-8 border-t border-gray-200">
+            <a href="/blog" class="inline-flex items-center text-brim-navy font-semibold hover:text-brim-gold transition">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Kembali ke Artikel
+            </a>
+        </div>
+    </div>
+</article>
+
+<%- include('partials/footer') %>

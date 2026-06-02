@@ -1,0 +1,40 @@
+<%- include('partials/header', { title: 'Artikel' }) %>
+
+<section class="py-16 bg-white min-h-[70vh]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12" data-aos="fade-down">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-brim-navy mb-4 px-2">Semua Artikel</h1>
+            <p class="text-gray-500 max-w-2xl mx-auto text-lg">Kumpulan tulisan, kajian, dan riset dari anggota BRIM KN untuk mencerdaskan umat.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <% if (posts && posts.length > 0) { %>
+                <% posts.forEach((post, index) => { %>
+                    <article class="bg-brim-gray rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-300 group flex flex-col h-full transform hover:-translate-y-1" data-aos="fade-up" data-aos-delay="<%= index * 100 %>">
+                        <div class="p-6 flex flex-col flex-grow">
+                            <div class="text-xs font-semibold text-brim-gold uppercase tracking-wider mb-2">
+                                <%= new Date(post.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                            </div>
+                            <h2 class="text-xl font-bold text-brim-navy mb-3 group-hover:text-blue-700 transition leading-snug">
+                                <a href="/blog/<%= post.slug %>"><%= post.title %></a>
+                            </h2>
+                            <p class="text-gray-600 mb-6 flex-grow line-clamp-3">
+                                <%= post.meta_description || post.content.replace(/<[^>]+>/g, '').substring(0, 150) + '...' %>
+                            </p>
+                            <a href="/blog/<%= post.slug %>" class="inline-flex items-center text-sm font-semibold text-brim-navy hover:text-brim-gold transition mt-auto">
+                                Baca Selengkapnya <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </a>
+                        </div>
+                    </article>
+                <% }) %>
+            <% } else { %>
+                <div class="col-span-3 text-center py-16 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                    <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"></path></svg>
+                    <p class="text-lg">Belum ada artikel yang dipublikasikan saat ini.</p>
+                </div>
+            <% } %>
+        </div>
+    </div>
+</section>
+
+<%- include('partials/footer') %>
