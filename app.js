@@ -156,6 +156,28 @@ app.post('/admin/posts/:id/delete', requireAuth, (req, res) => {
   res.redirect('/admin');
 });
 
+app.get('/admin/settings', requireAuth, (req, res) => {
+  res.render('admin/settings', { error: null, success: null });
+});
+
+app.post('/admin/settings/password', requireAuth, (req, res) => {
+  const { current_password, new_password, confirm_password } = req.body;
+  
+  if (new_password !== confirm_password) {
+    return res.render('admin/settings', { error: 'Password baru dan konfirmasi tidak cocok.', success: null });
+  }
+
+  const user = getOne('SELECT * FROM users WHERE id = ?', [req.session.userId]);
+  
+  if (user && bcrypt.compareSync(current_password, user.password)) {
+    const hash = bcrypt.hashSync(new_password, 10);
+    run('UPDATE users SET password = ? WHERE id = ?', [hash, req.session.userId]);
+    res.render('admin/settings', { error: null, success: 'Password berhasil diubah!' });
+  } else {
+    res.render('admin/settings', { error: 'Password saat ini salah.', success: null });
+  }
+});
+
 // Start Server
 initDB().then(() => {
   app.listen(PORT, () => {

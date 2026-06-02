@@ -7,7 +7,8 @@
     "start": "node app.js",
     "dev": "nodemon app.js",
     "build:css": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --minify",
-    "watch:css": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch"
+    "watch:css": "npx tailwindcss -i ./public/css/input.css -o ./public/css/output.css --watch",
+    "reset-password": "node reset-password.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
